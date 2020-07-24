@@ -1,35 +1,25 @@
-Title: "Reproducible Research Project-1"
-Author: "Sefat-E-Barket"
-
+---
+title: "Reproducible Research Project-1"
+author: "Sefat-E-Barket"
+output: 
+  html_document:
+    keep_md: true
 ---
 
 
-## Loading and preprocessing the data
 
-Download the activity monitoring data and retrieve its .csv file.
 
 ```{r}
-# Load all the relevant library to the Project 
 library(ggplot2)
-library("data.table")
-# Download and unzip the activity monitoring data
-download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip", destfile = paste0(getwd(), '/repdata%2Fdata%2Factivity.zip'), mode="wb")
-unzip("repdata%2Fdata%2Factivity.zip",exdir = "fitness-data")
-# Read the .csv data and assign into a Data table
-activityData <- data.table::fread(input = "fitness-data/activity.csv")
+activityData <- read.csv("C:\Users\PC\Downloads\activity.csv")
+activityData
 ```
 
-## What is mean total number of steps taken per day?
-
-Calculating the total number of steps taken each day and showing the first ten entries of the data table.
 
 ```{r}
-stepsTotal <- activityData[, c(lapply(.SD, sum, na.rm = FALSE)), .SDcols = c("steps"), by = .(date)] 
-# View the first ten entries of the data table
+stepsTotal <- activityData[, c(lapply(.SD, sum, na.rm = FALSE)), .SDcols = c("steps"), by = .(date)]
 head(stepsTotal, 10)
 ```
-
-Constructing a histogram of the total number of steps taken each day. 
 
 ```{r}
 ggplot(stepsTotal, aes(x = steps)) +
@@ -39,15 +29,12 @@ ggplot(stepsTotal, aes(x = steps)) +
     theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Calculating for the mean and median of the total number of steps taken per day.
+
 ```{r}
 stepsTotal[, .(MeanSteps = mean(steps, na.rm = TRUE), 
                MedianSteps = median(steps, na.rm = TRUE))]
 ```
 
-## What is the average daily activity pattern?
-
-Constructing a time series plot of the 5-minute interval and the average number of steps taken, averaged across all days
 
 ```{r}
 fiveminIntdata <- activityData[, c(lapply(.SD, mean, na.rm = TRUE)), .SDcols = c("steps"), by = .(interval)] 
@@ -58,39 +45,34 @@ ggplot(fiveminIntdata, aes(x = interval , y = steps)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Determining which 5-minute interval, on average across all the days in the data set, contains the maximum number of steps?
+
 
 ```{r}
 fiveminIntdata[steps == max(steps), .(maxInterval = interval)]
 ```
-
-## Imputing missing values
-
-Determining the total number of missing values in the data set (i.e. the total number of rows with ð™½ð™°s)
+í¹°s)
 
 ```{r}
-activityData[is.na(steps), .N ]    # alternatively, nrow(activityData[is.na(steps),])
+activityData[is.na(steps), .N ]    
 ```
 
-Using the median of the data set to supply for the missing values. 
 
 ```{r}
 activityData[is.na(steps), "steps"] <- activityData[, c(lapply(.SD, median, na.rm = TRUE)), .SDcols = c("steps")]
 ```
 
-Creating a new data set after the missing values were supplied
 
 ```{r}
 data.table::fwrite(x = activityData, file = "fitness-data/modifiedData.csv", quote = FALSE)
 ```
 
-Repeating the previous steps on the new data set to determine the effect of the supplied missing values.
+
 
 ```{r}
 stepsTotalmodified <- activityData[, c(lapply(.SD, sum, na.rm = FALSE)), .SDcols = c("steps"), by = .(date)] 
 ```
 
-Plotting the new histogram of the total number of steps taken each day. 
+
 
 ```{r}
 ggplot(stepsTotalmodified, aes(x = steps)) +
@@ -100,20 +82,19 @@ ggplot(stepsTotalmodified, aes(x = steps)) +
     theme(plot.title = element_text(hjust = 0.5))
 ```
 
-Calculating for the modified mean and median of the total number of steps taken per day.
+
 ```{r}
 stepsTotalmodified[, .(MeanStepsModified = mean(steps, na.rm = TRUE), 
                MedianStepsModified = median(steps, na.rm = TRUE))]
 ```
-Comparing it back from the original data, it can be seen that replacing the missing values with the median, decreased the value of the mean and median of the total number of steps taken each day.
+
 ```{r}
 stepsTotal[, .(MeanSteps = mean(steps, na.rm = TRUE), 
                MedianSteps = median(steps, na.rm = TRUE))]
 ```
 
-## Are there differences in activity patterns between weekdays and weekends?
 
-Creating a new factor variable that classifies each day either weekday or weekend 
+
 ```{r}
 weekDayEnd <- data.table::fread(input = "fitness-data/activity.csv")
 weekDayEnd[, date := as.POSIXct(date, format = "%Y-%m-%d")]
@@ -123,7 +104,6 @@ weekDayEnd[grepl(pattern = "Saturday|Sunday", x = `Day of Week`), "Weekday or We
 weekDayEnd[, `weekday or weekend` := as.factor(`Weekday or Weekend`)]
 ```
 
-Constructing a panel plot containing the time series plot of the 5-minute interval and the average number of steps taken, averaged across all weekdays and weekends.
 
 ```{r}
 weekDayEnd[is.na(steps), "steps"] <- weekDayEnd[, c(lapply(.SD, median, na.rm = TRUE)), .SDcols = c("steps")]

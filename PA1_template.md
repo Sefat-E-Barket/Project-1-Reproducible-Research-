@@ -1,5 +1,12 @@
+
+---
 Title: "Reproducible Research Project-1"
 Author: "Sefat-E-Barket"
+output: 
+  html_document:
+    keep_md: true
+-------
+
 
 ======================================
 
